@@ -1,10 +1,19 @@
 package com.qa.TMTY.dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
-public class ordersDao<T> {
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.qa.TMTY.domain.Orders;
+import com.qa.TMTY.utils;
+public class ordersDao {
 
 	/*
 	 * List<T> readAll();
@@ -16,7 +25,7 @@ public class ordersDao<T> {
 	 * T update(T t);
 	 * 
 	 * int delete(long id);
-	 * 
+	 *  
 	 * T modelFromResultSet(ResultSet resultSet) throws SQLException;
 	 */
 
@@ -27,8 +36,8 @@ public class ordersDao<T> {
 	public Orders modelFromResultSet(ResultSet resultSet) throws SQLException {
 		Long id = resultSet.getLong("id");
 		String address = resultSet.getString("address");
-		Long package = resultSet.getLong("package_id");
-		return new Orders(id, address, package_id);
+		Long packageId = resultSet.getLong("package_id");
+		return new Orders(id, address, packageId);
 	}
 
 	/**
@@ -98,22 +107,22 @@ public class ordersDao<T> {
 		}
 		return null;
 	}
-// CURRENTLY UP TO HERE 
+//
 	/**
 	 * Updates an order in the database
 	 *
 	 * maybe remove customer as customer wont change necessarily
 	 */
 	@Override
-	public Order update(Order order) {
+	public Orders update(Orders orders) {
 		try (Connection connection = DBUtils.getInstance().getConnection();
 				PreparedStatement statement = connection
-						.prepareStatement("UPDATE orders SET fk_customer_id = ?, address = ? WHERE order_id = ?");) {
-			statement.setLong(1, order.getFkCustomerId());
-			statement.setString(2, order.getAddress());
-			statement.setLong(3, order.getOrderId());
+						.prepareStatement("UPDATE orders SET package_id = ?, address = ? WHERE id = ?");) {
+			statement.setLong(1, orders.getPackageId());
+			statement.setString(2, orders.getAddress());
+			statement.setLong(3, orders.getId());
 			statement.executeUpdate();
-			return read(order.getOrderId());
+			return read(orders.getId());
 		} catch (Exception e) {
 			LOGGER.debug(e);
 			LOGGER.error(e.getMessage());
@@ -125,10 +134,10 @@ public class ordersDao<T> {
 	 * Deletes an order in the database
 	 */
 	@Override
-	public int delete(long orderId) {
+	public int delete(long id) {
 		try (Connection connection = DBUtils.getInstance().getConnection();
-				PreparedStatement statement = connection.prepareStatement("DELETE FROM orders WHERE order_id = ?");) {
-			statement.setLong(1, orderId);
+				PreparedStatement statement = connection.prepareStatement("DELETE FROM orders WHERE id = ?");) {
+			statement.setLong(1, id);
 			return statement.executeUpdate();
 		} catch (Exception e) {
 			LOGGER.debug(e);
